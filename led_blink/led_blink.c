@@ -8,6 +8,10 @@
 
 #include <avr/io.h>
 
+/**
+ * The clock frequency of the default clock source (internal RC oscillator)
+ * for the ATMEGA32 controller is 1MHz.
+ */
 #define F_CPU 1000000UL
 
 #include <util/delay.h>
