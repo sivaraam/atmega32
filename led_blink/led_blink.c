@@ -8,13 +8,9 @@
 
 #include <avr/io.h>
 
-void count_down_to_zero (unsigned from)
-{
-	while (from != 0)
-	{
-		from--;
-	}
-}
+#define F_CPU 1000000UL
+
+#include <util/delay.h>
 
 int main (void)
 {
@@ -26,9 +22,7 @@ int main (void)
 
 	while (1)
 	{
-		PORTB = 0xff;
-		count_down_to_zero (10000u);
-		PORTB = 0x00;
-		count_down_to_zero (10000u);
+		PORTB ^= 0xff;
+		_delay_ms (1000u);
 	}
 }
