@@ -1,0 +1,48 @@
+The following tools are used to build a binary for ATMEGA32:
+
+	* avr-gcc - To compile the program
+
+		Options used to configure the tool:
+
+			-mmcu: specifies the ISA of the target
+
+		Typical command:
+
+			avr-gcc -mmcu=atmega32 -o $OUTPUT_BINARY.out $SOURCE.c
+
+
+	* objcopy - copy and translate object files, used to generate the
+	            Hex file that would be flashed to the target
+
+		Option used to configure the tool:
+
+			-O:  specifies the object format of the output
+
+		Typical command:
+
+			objcopy -O ihex $SOURCE.out $DEST.hex
+
+
+	* avrdude -  driver program for ``simple'' Atmel AVR MCU (Microcontroller Unit) programmer
+
+		Options to configure the tool:
+
+			-c: specifies the type of the programmer
+
+			-p: specifies the type of the MCU connected to the programmer
+
+			-P: specify the port to which the programmer is attached
+
+			-U: specifies the memory operations to perform
+
+		Typical command:
+
+			avrdude -c avrispmkII -p m32 -P usb -U flash:w:$INPUT.ihex
+
+			Note: Possibly root permission would be required to flash the device.
+
+		Note: A custom version of the 'avrdude' is used to
+		program the controller. The reason is currently unknown
+		but the binary is present in the 'avrdude' directory.
+
+		The custom config for 'avrdude' is also present in the same directory.
