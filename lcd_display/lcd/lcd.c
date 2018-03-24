@@ -33,8 +33,8 @@ void lcd_data (uint8_t data)
 {
 	/*
 	 * EN (0): 1
-	 * RW (1): 1
-	 * RS (2): 0
+	 * RW (1): 0
+	 * RS (2): 1
 	 */
 	PORTA = 0x05;
 
