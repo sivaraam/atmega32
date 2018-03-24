@@ -48,6 +48,25 @@ void lcd_data (uint8_t data)
 	_delay_us (100);
 }
 
+void lcd_goto_line_home (uint8_t line)
+{
+	if (line == 0 || line > 2)
+	{
+		// Do nothing if the request is for an invalid line
+		return;
+	}
+
+	if (line == 1)
+	{
+		/* 7-bit Home address: 0000000 */
+		lcd_command (0x80);
+	}
+	else
+	{
+		/* 7-bit Home address: 1000000 */
+		lcd_command (0xC0);
+	}
+}
 void initialize_lcd(void)
 {
 	// Initialization sequence

@@ -39,4 +39,8 @@ int main(void)
 	initialize_lcd();
 
 	write_data ("Hello world!");
+
+	lcd_goto_line_home (2);
+
+	write_data ("!dlrow olleH");
 }

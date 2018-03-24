@@ -71,6 +71,19 @@ void lcd_command (uint8_t cmd);
 void lcd_data (uint8_t data);
 
 /**
+ * lcd_select_line:
+ *
+ * @line_num: the line number (either 1 or 2)
+ *
+ * Go to the home position specific to the given line number
+ * by issuing the required commands.
+ *
+ * Any data written after selecting a particular line will be
+ * written starting from the home position of the line.
+ */
+void lcd_goto_line_home (uint8_t line_num);
+
+/**
  * initialize_lcd:
  *
  * Initialize the LCD by following the intialization sequence given in
