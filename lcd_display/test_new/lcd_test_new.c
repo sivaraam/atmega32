@@ -8,12 +8,6 @@
  * 	Pin 1: Read/Write pin of LCD
  * 	Pin 2: RS pin of LCD
  *
- * Notes:
- *
- * 	R: logic 1
- * 	W: logic 0
- *
- * 	DB: Data Bus of LCD
  */
 
 #include "../lcd/lcd.h"

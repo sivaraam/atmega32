@@ -1,6 +1,15 @@
 #include"lcd.h"
 #include <util/delay.h>
 
+/**
+ * Notes:
+ *
+ * 	R: 1
+ * 	W: 0
+ *
+ * 	DB: Data Bus of LCD
+ */
+
 void lcd_command (uint8_t cmd)
 {
 	/*
