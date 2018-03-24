@@ -7,6 +7,13 @@
  * 	Pin 0: Enable pin of LCD
  * 	Pin 1: Read/Write pin of LCD
  * 	Pin 2: RS pin of LCD
+ *
+ * Notes:
+ *
+ * 	R: logic 1
+ * 	W: logic 0
+ *
+ * 	DB: Data Bus of LCD
  */
 
 #include <avr/io.h>
@@ -56,11 +63,28 @@ void lcd_data (uint8_t data)
 
 void initialize_lcd(void)
 {
+	// Initialization sequence
 	/**
 	 * Initial wait for more than 15ms
 	 */
-	_delay_ms (20);
+	_delay_ms (20u);
 
+	// 2. Write initialization specific data to pins (as per data sheet of LCD)
+	lcd_command (0x30);
+
+	// 3. Wait for more than 4.1ms
+	_delay_ms (5u);
+
+	// 4. Write initialization specific data to pins (as per data sheet of LCD)
+	lcd_command (0x30);
+
+	// 5. Wait for more than 100us (micro seconds)
+	_delay_us (150u);
+
+	// 6. Write initialization specific data to pins (as per data sheet of LCD)
+	lcd_command (0x30);
+
+	// 7. Initialization instructions
 	/*
 	 * Function set
 	 *
@@ -76,18 +100,14 @@ void initialize_lcd(void)
 	lcd_command (0x3C);
 
 	/**
-	 * Display set
-	 *
-	 * DB7: 0
-	 * DB6: 0
-	 * DB5: 0
-	 * DB4: 0
-	 * DB3: 1
-	 * DB2: 1 (D: Display ON)
-	 * DB1: 0 (C: Cursor OFF)
-	 * DB0: 0 (B: Blink cursor OFF)
+	 * Display OFF
 	 */
-	lcd_command (0x0C);
+	lcd_command (0x08);
+
+	/**
+	 * Clear display
+	 */
+	lcd_command (0x01);
 
 	/**
 	 * Entry mode set:
@@ -104,9 +124,18 @@ void initialize_lcd(void)
 	lcd_command (0x06);
 
 	/**
-	 * Clear display
+	 * Display set
+	 *
+	 * DB7: 0
+	 * DB6: 0
+	 * DB5: 0
+	 * DB4: 0
+	 * DB3: 1
+	 * DB2: 1 (D: Display ON)
+	 * DB1: 0 (C: Cursor OFF)
+	 * DB0: 0 (B: Blink cursor OFF)
 	 */
-	lcd_command (0x01);
+	lcd_command (0x0C);
 }
 
 void write_data (const char *const data)
