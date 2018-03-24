@@ -23,6 +23,23 @@
 #define F_CPU 1000000UL
 #include <util/delay.h>
 
+/**
+ * lcd_command:
+ *
+ * @cmd: The command to be sent to hte LCD
+ *
+ * Send the comamand to the LCD by intializing the special
+ * pins of the LCD as required for sending the command and
+ * sending the command itself through the data pins.
+ *
+ * Note that the functions waits for a specific amount of time
+ * required for the LCD to process the command[1] and returns only
+ * after that.
+ *
+ * [1]: Currently, regardless of the command being issued, the function
+ *      waits for the maximum amount of time required to execute any
+ *      command on the LCD.
+ */
 void lcd_command (uint8_t cmd)
 {
 	/*
@@ -42,6 +59,19 @@ void lcd_command (uint8_t cmd)
 	_delay_ms(2);
 }
 
+/**
+ * lcd_data:
+ *
+ * @data: The data to be written to the DD RAM of the LCD.
+ *
+ * Send the display data to the LCD by intializing the special
+ * pins of the LCD as required for writing data and sending the
+ * data through the data pins.
+ *
+ * Note that the functions waits for a specific amount of time
+ * required for the LCD to process the data and returns only after
+ * that.
+ */
 void lcd_data (uint8_t data)
 {
 	/*
@@ -61,6 +91,15 @@ void lcd_data (uint8_t data)
 	_delay_us (100);
 }
 
+/**
+ * initialize_lcd:
+ *
+ * Initialize the LCD by following the intialization sequence given in
+ * the data sheet of the LCD.
+ *
+ * Also, configure the display correctly after completing the intialization
+ * sequence.
+ */
 void initialize_lcd(void)
 {
 	// Initialization sequence
@@ -143,12 +182,22 @@ void write_data (const char *const data)
 	for (uint16_t curr_char=0; curr_char < strlen (data); curr_char++)
 	{
 		lcd_data (*(data+curr_char));
+
 	}
 }
 
 int main(void)
 {
+	/**
+	 * Initialize ports used for LCD as outputs.
+	 */
 	DDRD = 0xFF;
+
+	/**
+	 * Note that only three pins of PORT A are actually
+	 * used to connect to the LCD but all ports are initialized
+	 * to simplify changing the value of the three pins.
+	 */
 	DDRA = 0xFF;
 
 	initialize_lcd();
