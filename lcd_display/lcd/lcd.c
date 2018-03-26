@@ -70,9 +70,7 @@ void lcd_goto_line_home (uint8_t line)
 void initialize_lcd(void)
 {
 	// Initialization sequence
-	/**
-	 * Initial wait for more than 15ms
-	 */
+	// 1. Initial wait for more than 15ms
 	_delay_ms (20u);
 
 	// 2. Write initialization specific data to pins (as per data sheet of LCD)
