@@ -39,9 +39,9 @@
 /**
  * lcd_command:
  *
- * @cmd: The command to be sent to hte LCD
+ * @cmd: The command to be sent to the LCD
  *
- * Send the comamand to the LCD by intializing the special
+ * Send the command to the LCD by initializing the special
  * pins of the LCD as required for sending the command and
  * sending the command itself through the data pins.
  *
@@ -58,9 +58,9 @@ void lcd_command (uint8_t cmd);
 /**
  * lcd_data:
  *
- * @data: The data to be written to the DD RAM of the LCD.
+ * @data: The data to be written to the DDRAM of the LCD.
  *
- * Send the display data to the LCD by intializing the special
+ * Send the display data to the LCD by initializing the special
  * pins of the LCD as required for writing data and sending the
  * data through the data pins.
  *
@@ -86,10 +86,10 @@ void lcd_goto_line_home (uint8_t line_num);
 /**
  * initialize_lcd:
  *
- * Initialize the LCD by following the intialization sequence given in
+ * Initialize the LCD by following the initialization sequence given in
  * the data sheet of the LCD.
  *
- * Also, configure the display correctly after completing the intialization
+ * Also, configure the display correctly after completing the initialization
  * sequence.
  */
 void initialize_lcd(void);
