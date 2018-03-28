@@ -46,8 +46,8 @@ int8_t RTC_init (void)
 	static const uint8_t seconds_addr = 0x00,
 	                     control_addr = 0x07,
 	                     seconds_config_word = 0x00,
-	                     minutes_config_word = 0x00,
-	                     hours_config_word = 0x00,
+	                     minutes_config_word = 0x59,
+	                     hours_config_word = 0x12,
 	                     control_config_word = 0x00;
 
 	I2C_start();
@@ -104,7 +104,7 @@ int8_t RTC_init (void)
 }
 
 int8_t
-RTC_read_seconds (uint8_t *seconds)
+RTC_read_time (uint8_t *seconds, uint8_t *minutes, uint8_t *hours)
 {
 	/* Re-start communication to read the value */
 	I2C_start();
@@ -130,9 +130,22 @@ RTC_read_seconds (uint8_t *seconds)
 		return 1;
 	}
 
+	/* Read seconds */
 	*seconds = I2C_receive_byte ();
 
-	/* Send NACK */
+	/* Send ACK to continue receiving */
+	I2C_send_ack (I2C_ACK_ACK);
+
+	/* Read minutes */
+	*minutes = I2C_receive_byte ();
+
+	/* Send ACK to continue receiving */
+	I2C_send_ack (I2C_ACK_ACK);
+
+	/* Read hours */
+	*hours = I2C_receive_byte ();
+
+	/* Send NACK to stop receiving */
 	I2C_send_ack (I2C_ACK_NACK);
 
 	/* Stop the communication */
@@ -141,33 +154,66 @@ RTC_read_seconds (uint8_t *seconds)
 	return 0;
 }
 
-/**
- * get_seconds:
- *
- * @seconds_reg: the bits in the seconds register
- * @tens_ASCII: used to return the ASCII value of the tens position
- * @ones_ASCII: used to return the ASCII value of the ones position
- *
- * Given the value of the bits in the seconds register of the RTC
- * return the ASCII value of the 10s and 1s digit.
- */
-void get_seconds_ascii (uint8_t seconds_reg, uint8_t *tens_ASCII, uint8_t *ones_ASCII)
+void display_time (uint8_t hours_reg, uint8_t minutes_reg, uint8_t seconds_reg)
 {
-	/*
-	 * The three bits corresponding to the tens position
-	 * of the seconds are 6, 5, 4 (0-indexed).
-	 */
-	*tens_ASCII = (((seconds_reg & 0x70)) >> 4) + '0';
+	/* Bit positions are 0-indexed */
+
+	/* Display the hours */
 
 	/*
-	 * The lower 4-bits correspond to the ones position
-	 * of the seconds.
+	 * Bits corresponding to the tens position of the hours in
+	 * the hours register: 5, 4
 	 */
-	*ones_ASCII = (seconds_reg & 0x0F) + '0';
+	lcd_data ( ((hours_reg & 0x30) >> 4) + '0');
+
+	/*
+	 * Bits corresponding to the ones position of the hours in
+	 * the hours register: 3, 2, 1, 0
+	 */
+	lcd_data ( (hours_reg & 0x0F) + '0');
+
+
+	/* Hour-Minutes separator */
+	lcd_data (':');
+
+
+	/* Display the minutes */
+
+	/*
+	 * Bits corresponding to the tens position of the minutes in
+	 * the minutes register: 6, 5, 4
+	 */
+	lcd_data ( ((minutes_reg & 0x70) >> 4) + '0');
+
+	/*
+	 * Bits corresponding to the ones position of the minutes in
+	 * the minutes register: 3, 2, 1, 0
+	 */
+	lcd_data ( (minutes_reg & 0x0F) + '0');
+
+
+	/* Minutes-Seconds separator */
+	lcd_data (':');
+
+
+	/* Display the seconds */
+
+	/*
+	 * Bits corresponding to the tens position of the seconds in
+	 * the seconds register: 6, 5, 4
+	 */
+	lcd_data ( (((seconds_reg & 0x70)) >> 4) + '0' );
+
+	/*
+	 * Bits corresponding to the ones position of the seconds in
+	 * the seconds register: 3, 2, 1, 0
+	 */
+	lcd_data ( (seconds_reg & 0x0F) + '0' );
 }
 
 int main (void)
 {
+
 	/* Debug port */
 	DDRB = 0xFF;
 	PORTB = 0xFF;
@@ -189,22 +235,18 @@ int main (void)
 
 	while (1)
 	{
-		uint8_t seconds_reg = 0, seconds_tens_ASCII = 0, seconds_ones_ASCII = 0;
+		uint8_t seconds_reg = 0, minutes_reg = 0, hours_reg = 0;
 
-		PORTB = 0xFF; // LEDs Off
-
-		if (RTC_read_seconds (&seconds_reg))
+		if (RTC_read_time (&seconds_reg, &minutes_reg, &hours_reg))
 		{
 			PORTB = 0x00;
 			return 1;
 		}
 
-		get_seconds_ascii (seconds_reg, &seconds_tens_ASCII, &seconds_ones_ASCII);
-
 		lcd_goto_line_home (1);
-		lcd_data (seconds_tens_ASCII);
-		lcd_data (seconds_ones_ASCII);
-		_delay_ms (400);  /* wait for some time before updating the value */
+
+		display_time (hours_reg, minutes_reg, seconds_reg);
+//		_delay_ms (200);  /* wait for some time before updating the value */
 	}
 
 	return 0;
