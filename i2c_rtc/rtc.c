@@ -15,8 +15,20 @@
 static const uint8_t rtc_slave_addr__write = 0xD0,
                      rtc_slave_addr__read  = 0xD1;
 
-static const uint8_t seconds_addr = 0x00;
+static const uint8_t seconds_register_addr = 0x00;
 
+/**
+ * Structure used to easily access different bit sequences in the
+ * BCD encoded RTC register values.
+ *
+ * Bit positions in comments are 0-indexed.
+ */
+
+/**
+ * RTC_time:
+ *
+ * Structure used to hold the values of the time related registers.
+ */
 struct RTC_time
 {
 	union RTC_time_hours
@@ -81,7 +93,7 @@ RTC_init (void)
 		return 1;
 	}
 
-	if (I2C_send (seconds_addr))
+	if (I2C_send (seconds_register_addr))
 	{
 		return 1;
 	}
@@ -184,7 +196,7 @@ RTC_init (void)
 int8_t
 RTC_read_time (struct RTC_time *time)
 {
-	/* Re-start communication to read the value */
+	/* Start communication to read the value */
 	I2C_start();
 
 	/* Request write to specify the address of the seconds register */
@@ -194,15 +206,15 @@ RTC_read_time (struct RTC_time *time)
 	}
 
 	/* Send seconds register address */
-	if (I2C_send (seconds_addr))
+	if (I2C_send (seconds_register_addr))
 	{
 		return 1;
 	}
 
-	/* Re-start to read the value from the register */
+	/* Re-start to read the value from the registers */
 	I2C_start ();
 
-	/* Request to read value from the register address */
+	/* Request to read value from the registers */
 	if (I2C_send (rtc_slave_addr__read))
 	{
 		return 1;
@@ -220,37 +232,42 @@ RTC_read_time (struct RTC_time *time)
 	return 0;
 }
 
-/*
+/**
+ * Function used to display the time in the required format[1].
+ * The function uses the required LCD commands as and when required.
+ *
+ * [1]: Required format:
+ *
+ * 		Time: HH:MM:SS
+ */
+
+/**
  * display_time:
  *
  * (@time): the structure containing the values in the RTC registers
  *
- * Display the time in the LCD after interpreting the BCD encoded register
- * values of the time. The time is displayed in the required format (HH:MM:SS)
- * using the LCD commands as required.
+ * Display the time in the LCD in the required format (see above).
  */
 void
 display_time (struct RTC_time time)
 {
-	/* Bit positions are 0-indexed */
-
 	/* Display the hours */
-	lcd_data ( time.hours.positions.tens_pos + '0');
-	lcd_data ( time.hours.positions.ones_pos + '0');
+	lcd_data (time.hours.positions.tens_pos + '0');
+	lcd_data (time.hours.positions.ones_pos + '0');
 
 	/* Hour-Minutes separator */
 	lcd_data (':');
 
 	/* Display the minutes */
-	lcd_data ( time.minutes.positions.tens_pos + '0');
-	lcd_data ( time.minutes.positions.ones_pos + '0');
+	lcd_data (time.minutes.positions.tens_pos + '0');
+	lcd_data (time.minutes.positions.ones_pos + '0');
 
 	/* Minutes-Seconds separator */
 	lcd_data (':');
 
 	/* Display the seconds */
-	lcd_data ( time.seconds.positions.tens_pos + '0' );
-	lcd_data ( time.seconds.positions.ones_pos + '0' );
+	lcd_data (time.seconds.positions.tens_pos + '0' );
+	lcd_data (time.seconds.positions.ones_pos + '0' );
 }
 
 int
