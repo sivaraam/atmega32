@@ -67,6 +67,20 @@ void lcd_goto_line_home (uint8_t line)
 		lcd_command (0xC0);
 	}
 }
+
+void lcd_read_bf (void)
+{
+	/*
+	 * EN (0): 1
+	 * RW (1): 1
+	 * RS (2): 0
+	 */
+	PORTA = 0x03;
+
+	/* Pull down enable */
+	PORTA &= 0xFE;
+}
+
 void initialize_lcd(void)
 {
 	/* Initialization sequence */

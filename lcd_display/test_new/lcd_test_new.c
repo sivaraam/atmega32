@@ -12,13 +12,35 @@
 
 #include "../lcd/lcd.h"
 #include <avr/io.h>
+#include <util/delay.h>
 #include <string.h>
 
 void write_data (const char *const data)
 {
 	for (uint16_t curr_char=0; curr_char < strlen (data); curr_char++)
 	{
+		while ((PINC & 0x01) == 0x01);
+
 		lcd_data (*(data+curr_char));
+
+		/*
+		 * Configure PORTD as input to receive the BF and
+		 * address counter status
+		 */
+		DDRD = 0x00;
+
+		lcd_read_bf ();
+		PORTB = PIND;
+
+		/**
+		 * Re-configure PORTD as output
+		 */
+		DDRD = 0xFF;
+
+		/*
+		 * Delay to avoid continuous data inputs.
+		 */
+		_delay_ms (1000);
 	}
 }
 
@@ -35,6 +57,9 @@ int main(void)
 	 * to simplify changing the value of the three pins.
 	 */
 	DDRA = 0xFF;
+
+	/* Initialize all pins of PORTB as output for testing purposes. */
+	DDRB = 0xFF;
 
 	initialize_lcd();
 

@@ -84,6 +84,14 @@ void lcd_data (uint8_t data);
 void lcd_goto_line_home (uint8_t line_num);
 
 /**
+ * lcd_read_bf:
+ *
+ * Read the Busy Flag (BF) and Address Counter counts for the LCD into
+ * the port used for output (PORTD).
+ */
+void lcd_read_bf (void);
+
+/**
  * initialize_lcd:
  *
  * Initialize the LCD by following the initialization sequence given in
