@@ -43,4 +43,7 @@ int main(void)
 	lcd_goto_line_home (2);
 
 	write_data ("!dlrow olleH");
+
+	// Check what happens when we try to shift the display
+	lcd_command (0x14);
 }
