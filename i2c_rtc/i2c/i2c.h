@@ -79,15 +79,20 @@ void
 I2C_stop (void);
 
 /**
- * I2C_send_byte:
+ * I2C_send:
  *
- * @byte: the byte to be sent
+ * @byte: byte to be sent
  *
- * Send a byte over the I2C channel.
+ * Send a byte to the I2C channel and check for the ACK
+ * received for the corresponding byte.
  *
  * Note: Transfer is done MSB first as specified by I2C.
+ *
+ * Returns: 0 if an ACK is received else returns a non-zero
+ *          value.
  */
-void I2C_send_byte (uint8_t byte);
+int8_t
+I2C_send (uint8_t byte);
 
 /**
  * I2C_send_ack:
@@ -101,16 +106,22 @@ void
 I2C_send_ack (uint8_t ack);
 
 /**
- * I2C_receive_byte:
+ * I2C_receive:
  *
- * Return the byte that was read during 8 high clock periods.
+ * @ack_to_send: the ack value to send after the corresponding receive
  *
- * Note: Data is expected to be received MSB first as specified by I2C.
+ * Receive a byte from the I2C channel and send the given ACK after the
+ * receive.
  *
- * Returns: a byte that was read from the I2C channel.
+ * Note: An ACK signal the transmitter that the byte was successfully received
+ *       and another byte may be sent as specified by I2C. An NACK does not mean
+ *       much to the transmitter when it is the slave. In general the slave would
+ *       stop transmitting when an NACK is received. For a master, NACK means
+ *       the master can then generate either a STOP condition to abort the
+ *       transfer, or a repeated START condition to start a new transfer.
  */
 uint8_t
-I2C_receive_byte (void);
+I2C_receive (uint8_t ack_to_send);
 
 /**
  * I2C_receive_ack:

@@ -110,7 +110,15 @@ I2C_send_bit (uint8_t bit)
 	delay_fn (CLK_HIGH_PERIOD);
 }
 
-void I2C_send_byte (uint8_t byte)
+/**
+ * I2C_send_byte:
+ *
+ * @byte: the byte to be sent
+ *
+ * Send a byte over the I2C channel.
+ */
+static void
+I2C_send_byte (uint8_t byte)
 {
 	static const uint8_t MSB_offset = 7;
 	int8_t bit = MSB_offset;
@@ -119,6 +127,19 @@ void I2C_send_byte (uint8_t byte)
 	{
 		I2C_send_bit ((byte & (1<<bit)) >> bit);
 	}
+}
+
+int8_t
+I2C_send (uint8_t byte)
+{
+	I2C_send_byte (byte);
+
+	/*
+	 * Take advantage of the fact that the value of
+	 * the ACK constant match with the corresponding
+	 * values to be returned.
+	 */
+	return I2C_receive_ack();
 }
 
 void
@@ -172,7 +193,16 @@ I2C_receive_bit (void)
 	return input_bit;
 }
 
-uint8_t
+/**
+ * I2C_receive_byte:
+ *
+ * Return the byte that was read during 8 high clock periods.
+ *
+ * Note: Data is expected to be received MSB first as specified by I2C.
+ *
+ * Returns: a byte that was read from the I2C channel.
+ */
+static uint8_t
 I2C_receive_byte (void)
 {
 	static const uint8_t MSB_offset = 7;
@@ -186,6 +216,16 @@ I2C_receive_byte (void)
 	}
 
 	return input_byte;
+}
+
+uint8_t
+I2C_receive (uint8_t ack_to_send)
+{
+	uint8_t incoming_byte = I2C_receive_byte ();
+
+	I2C_send_ack (ack_to_send);
+
+	return incoming_byte;
 }
 
 /**

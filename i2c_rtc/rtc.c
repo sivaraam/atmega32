@@ -17,22 +17,6 @@ static const uint8_t rtc_slave_addr__write = 0xD0,
 
 static const uint8_t seconds_addr = 0x00;
 
-int8_t I2C_send (uint8_t byte)
-{
-	enum I2C_ack curr_ack = I2C_ACK_ACK;
-
-	I2C_send_byte (byte);
-
-	/* Check ACK */
-	curr_ack = I2C_receive_ack();
-
-	if (curr_ack == I2C_ACK_NACK)
-	{
-		return 1;
-	}
-
-	return 0;
-}
 
 int8_t RTC_init (void)
 {
@@ -123,23 +107,11 @@ RTC_read_time (uint8_t *seconds, uint8_t *minutes, uint8_t *hours)
 		return 1;
 	}
 
-	/* Read seconds */
-	*seconds = I2C_receive_byte ();
+	*seconds = I2C_receive (I2C_ACK_ACK);
 
-	/* Send ACK to continue receiving */
-	I2C_send_ack (I2C_ACK_ACK);
+	*minutes = I2C_receive (I2C_ACK_ACK);
 
-	/* Read minutes */
-	*minutes = I2C_receive_byte ();
-
-	/* Send ACK to continue receiving */
-	I2C_send_ack (I2C_ACK_ACK);
-
-	/* Read hours */
-	*hours = I2C_receive_byte ();
-
-	/* Send NACK to stop receiving */
-	I2C_send_ack (I2C_ACK_NACK);
+	*hours = I2C_receive (I2C_ACK_NACK);
 
 	/* Stop the communication */
 	I2C_stop();
