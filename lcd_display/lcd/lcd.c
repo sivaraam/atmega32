@@ -19,13 +19,13 @@ void lcd_command (uint8_t cmd)
 	 */
 	PORTA = 0x01;
 
-	// write command
+	/* write command */
 	PORTD = cmd;
 
-	// clear all pins
+	/* clear all pins */
 	PORTA = 0x00;
 
-	// wait for some time
+	/* wait for some time */
 	_delay_ms(2);
 }
 
@@ -38,13 +38,13 @@ void lcd_data (uint8_t data)
 	 */
 	PORTA = 0x05;
 
-	// write data
+	/* write data */
 	PORTD = data;
 
-	// clear all pins
+	/* clear all pins */
 	PORTA = 0x00;
 
-	// wait for some time
+	/* wait for some time */
 	_delay_us (100);
 }
 
@@ -52,7 +52,7 @@ void lcd_goto_line_home (uint8_t line)
 {
 	if (line == 0 || line > 2)
 	{
-		// Do nothing if the request is for an invalid line
+		/* Do nothing if the request is for an invalid line */
 		return;
 	}
 
@@ -69,26 +69,26 @@ void lcd_goto_line_home (uint8_t line)
 }
 void initialize_lcd(void)
 {
-	// Initialization sequence
-	// 1. Initial wait for more than 15ms
+	/* Initialization sequence */
+	/* 1. Initial wait for more than 15ms */
 	_delay_ms (20u);
 
-	// 2. Write initialization specific data to pins (as per data sheet of LCD)
+	/* 2. Write initialization specific data to pins (as per data sheet of LCD) */
 	lcd_command (0x30);
 
-	// 3. Wait for more than 4.1ms
+	/* 3. Wait for more than 4.1ms */
 	_delay_ms (5u);
 
-	// 4. Write initialization specific data to pins (as per data sheet of LCD)
+	/* 4. Write initialization specific data to pins (as per data sheet of LCD) */
 	lcd_command (0x30);
 
-	// 5. Wait for more than 100us (micro seconds)
+	/* 5. Wait for more than 100us (micro seconds) */
 	_delay_us (150u);
 
-	// 6. Write initialization specific data to pins (as per data sheet of LCD)
+	/* 6. Write initialization specific data to pins (as per data sheet of LCD) */
 	lcd_command (0x30);
 
-	// 7. Initialization instructions
+	/* 7. Initialization instructions */
 	/*
 	 * Function set
 	 *
@@ -98,8 +98,8 @@ void initialize_lcd(void)
 	 * DB4: 1
 	 * DB3: 1 (N: 2 lines of display)
 	 * DB2: 1 (F: 5*10 dots)
-	 * DB1: DONT CARE
-	 * DB0: DONT CARE
+	 * DB1: DON'T CARE
+	 * DB0: DON'T CARE
 	 */
 	lcd_command (0x3C);
 
