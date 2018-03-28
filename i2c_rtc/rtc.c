@@ -17,6 +17,51 @@ static const uint8_t rtc_slave_addr__write = 0xD0,
 
 static const uint8_t seconds_addr = 0x00;
 
+struct RTC_time
+{
+	union RTC_time_hours
+	{
+		uint8_t register_val;
+		struct RTC_time_hours_positions
+		{
+
+			/*
+			 * Bits corresponding to the ones position of the
+			 * hours in the hours register: 3, 2, 1, 0
+			 */
+			unsigned ones_pos : 4;
+
+			/*
+			 * Bits corresponding to the tens position of the
+			 * hours in the hours register: 5, 4
+			 */
+			unsigned tens_pos : 2;
+
+		} positions;
+	} hours;
+
+	union RTC_time_minutes_seconds
+	{
+		uint8_t register_val;
+		struct RTC_time_minutes_seconds_positions
+		{
+
+			/*
+			 * Bits corresponding to the ones position of the
+			 * minutes (seconds) in the minutes (seconds) register: 3, 2, 1, 0
+			 */
+			unsigned ones_pos : 4;
+
+			/*
+			 * Bits corresponding to the tens position of the
+			 * minutes (seconds) in the minutes (seconds) register: 6, 5, 4
+			 */
+			unsigned tens_pos : 3;
+
+		} positions;
+	} minutes, seconds;
+};
+
 /**
  * RTC_init:
  *
@@ -127,7 +172,8 @@ RTC_init (void)
 /**
  * RTC_read_time:
  *
- * (@hours, @minutes, @seconds): pointers used to return values
+ * (@time): pointer to the structure used to return the values
+ *          of the registers related to time
  *
  * Read the time from the RTC using I2C and return the values
  * read from the registers without any interpretation as is.
@@ -136,7 +182,7 @@ RTC_init (void)
  *          of failure.
  */
 int8_t
-RTC_read_time (uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
+RTC_read_time (struct RTC_time *time)
 {
 	/* Re-start communication to read the value */
 	I2C_start();
@@ -162,11 +208,11 @@ RTC_read_time (uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 		return 1;
 	}
 
-	*seconds = I2C_receive (I2C_ACK_ACK);
+	time->seconds.register_val = I2C_receive (I2C_ACK_ACK);
 
-	*minutes = I2C_receive (I2C_ACK_ACK);
+	time->minutes.register_val = I2C_receive (I2C_ACK_ACK);
 
-	*hours = I2C_receive (I2C_ACK_NACK);
+	time->hours.register_val = I2C_receive (I2C_ACK_NACK);
 
 	/* Stop the communication */
 	I2C_stop();
@@ -177,68 +223,34 @@ RTC_read_time (uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 /*
  * display_time:
  *
- * (@hours_reg, @minutes_reg, @seconds_reg): the corresponding values in the RTC registers
+ * (@time): the structure containing the values in the RTC registers
  *
  * Display the time in the LCD after interpreting the BCD encoded register
  * values of the time. The time is displayed in the required format (HH:MM:SS)
  * using the LCD commands as required.
  */
 void
-display_time (uint8_t hours_reg, uint8_t minutes_reg, uint8_t seconds_reg)
+display_time (struct RTC_time time)
 {
 	/* Bit positions are 0-indexed */
 
 	/* Display the hours */
-
-	/*
-	 * Bits corresponding to the tens position of the hours in
-	 * the hours register: 5, 4
-	 */
-	lcd_data ( ((hours_reg & 0x30) >> 4) + '0');
-
-	/*
-	 * Bits corresponding to the ones position of the hours in
-	 * the hours register: 3, 2, 1, 0
-	 */
-	lcd_data ( (hours_reg & 0x0F) + '0');
-
+	lcd_data ( time.hours.positions.tens_pos + '0');
+	lcd_data ( time.hours.positions.ones_pos + '0');
 
 	/* Hour-Minutes separator */
 	lcd_data (':');
 
-
 	/* Display the minutes */
-
-	/*
-	 * Bits corresponding to the tens position of the minutes in
-	 * the minutes register: 6, 5, 4
-	 */
-	lcd_data ( ((minutes_reg & 0x70) >> 4) + '0');
-
-	/*
-	 * Bits corresponding to the ones position of the minutes in
-	 * the minutes register: 3, 2, 1, 0
-	 */
-	lcd_data ( (minutes_reg & 0x0F) + '0');
-
+	lcd_data ( time.minutes.positions.tens_pos + '0');
+	lcd_data ( time.minutes.positions.ones_pos + '0');
 
 	/* Minutes-Seconds separator */
 	lcd_data (':');
 
-
 	/* Display the seconds */
-
-	/*
-	 * Bits corresponding to the tens position of the seconds in
-	 * the seconds register: 6, 5, 4
-	 */
-	lcd_data ( (((seconds_reg & 0x70)) >> 4) + '0' );
-
-	/*
-	 * Bits corresponding to the ones position of the seconds in
-	 * the seconds register: 3, 2, 1, 0
-	 */
-	lcd_data ( (seconds_reg & 0x0F) + '0' );
+	lcd_data ( time.seconds.positions.tens_pos + '0' );
+	lcd_data ( time.seconds.positions.ones_pos + '0' );
 }
 
 int
@@ -267,9 +279,9 @@ main (void)
 
 	while (1)
 	{
-		uint8_t seconds_reg = 0, minutes_reg = 0, hours_reg = 0;
+		struct RTC_time time = { {0}, {0}, {0} };
 
-		if (RTC_read_time (&hours_reg, &minutes_reg, &seconds_reg))
+		if (RTC_read_time (&time))
 		{
 			/* Glow all LEDs to indicate ACK failure and exit */
 			PORTB = 0x00;
@@ -278,7 +290,7 @@ main (void)
 
 		lcd_goto_line_home (1);
 
-		display_time (hours_reg, minutes_reg, seconds_reg);
+		display_time (time);
 	}
 
 	return 0;
