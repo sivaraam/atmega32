@@ -29,8 +29,8 @@
  *
  * 	PORT:
  *
- * 		0 - SCL
- * 		1 - SDA
+ * 		6 - SCL
+ * 		7 - SDA
  */
 
 #include <stdint.h>
@@ -43,8 +43,8 @@
 /*
  * Define constants for clock pin offsets
  */
-#define SCL_PIN 0
-#define SDA_PIN 1
+#define SCL_PIN 6
+#define SDA_PIN 7
 
 /**
  * Constants that represent values corresponding to the ACK received.
