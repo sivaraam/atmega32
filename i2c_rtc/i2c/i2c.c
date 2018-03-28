@@ -20,6 +20,9 @@ static delay delay_fn = _delay_us;
 inline void
 I2C_init (void)
 {
+	// initially configure the SDA and SCL for output
+	// WHEN THE SCL IS LOW
+	DDR |= (1<<SCL_PIN) | (1<<SDA_PIN);
 	PORT |= (1<<SCL_PIN) | (1<<SDA_PIN);
 }
 
@@ -31,8 +34,14 @@ I2C_init (void)
 static void
 I2C_start_stop_helper (_Bool start)
 {
-	// initially keep the SCL low for half the clock low period
+	// initially keep the SCL low
 	PORT &= ~(1<<SCL_PIN);
+
+	// ensure SDA is configured for output
+	// WHEN THE SCL PIN IS LOW
+	DDR |= (1<<SDA_PIN);
+
+	// wait  for half the clock low period
 	delay_fn (CLK_HALF_LOW_PERIOD);
 
 	// Ensure SDA is at the level required for the desired condition
@@ -52,7 +61,6 @@ I2C_start_stop_helper (_Bool start)
 
 	// wait for rest of the clock high period
 	delay_fn (CLK_HALF_HIGH_PERIOD);
-
 }
 
 void
@@ -65,6 +73,7 @@ void
 I2C_stop (void)
 {
 	I2C_start_stop_helper (0);
+	delay_fn (STOP_START_FREE_TIME);
 }
 
 /**
@@ -79,6 +88,11 @@ I2C_send_bit (uint8_t bit)
 {
 	// initially keep the SCL low for half the clock low period
 	PORT &= ~(1<<SCL_PIN);
+
+	// ensure SDA is configured for output
+	// WHEN THE SCL IS LOW
+	DDR |= (1<<SDA_PIN);
+
 	delay_fn (CLK_HALF_LOW_PERIOD);
 
 	// set SDA to the bit to be sent
@@ -112,7 +126,15 @@ I2C_send_ack (enum I2C_ack ack)
 	 * the ACK constant corresponds to the bit
 	 * to be sent over the I2C channel.
 	 */
-	I2C_send_bit (ack);
+	switch (ack)
+	{
+	case I2C_ACK_ACK:
+		I2C_send_bit (0);
+		break;
+	case I2C_ACK_NACK:
+		I2C_send_bit (1);
+		break;
+	}
 }
 
 /**
@@ -128,9 +150,15 @@ I2C_receive_bit (void)
 {
 	uint8_t input_bit = 0;
 
-	// initially keep SCL low for the clock low period
-	// allowing slave to toggle SDA as required
+	// initially pull SCL to low
 	PORT &= ~(1<<SCL_PIN);
+
+	// ensure SDA is configured for input from slave
+	// WHEN SCL IS LOW
+	DDR &= ~(1<<SDA_PIN);
+
+	// keep SCL low for the clock low period
+	// allowing slave to toggle SDA as required
 	delay_fn (CLK_LOW_PERIOD);
 
 	// pull the clock high and wait for half the clock
@@ -173,12 +201,12 @@ I2C_receive_byte (void)
 enum I2C_ack
 I2C_receive_ack (void)
 {
-	uint8_t ack = I2C_receive_bit();
+	uint8_t ack = I2C_receive_bit ();
 
 	/*
 	 * Take advantage of the fact that the value of
 	 * the bit received corresponds to the
 	 * value of the corresponding ACK constants.
 	 */
-	return ack;
+	return (ack) ? I2C_ACK_NACK : I2C_ACK_ACK;
 }

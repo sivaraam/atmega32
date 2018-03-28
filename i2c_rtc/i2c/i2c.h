@@ -22,8 +22,8 @@
  *
  * - Hold time for START: 5us
  *
- * - Configuring the direction of the pins used for the communication lies
- *   in the hands of the caller.
+ * - Configuring the direction of the pins used for the communication
+ *   is done as and when required by the library internally.
  *
  * Pins:
  *
@@ -38,6 +38,7 @@
 
 #define PORT PORTA
 #define PIN PINA
+#define DDR DDRA
 
 /*
  * Define constants for clock pin offsets
@@ -50,8 +51,8 @@
  */
 enum I2C_ack
 {
-	I2C_ACK_ACK = 0,
-	I2C_ACK_NACK = 1
+	I2C_ACK_ACK = 4,
+	I2C_ACK_NACK = 7
 };
 
 /**

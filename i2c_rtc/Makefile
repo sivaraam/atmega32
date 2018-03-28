@@ -2,6 +2,7 @@
 COMPILER_OPTIONS += -Wall
 COMPILER_OPTIONS += -Wpedantic
 COMPILER_OPTIONS += -Wextra
+COMPILER_OPTIONS += -O0
 
 rtc.hex: rtc.out
 	objcopy -O ihex $^ $@
