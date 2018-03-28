@@ -18,7 +18,7 @@ static const uint8_t rtc_slave_addr__write = 0xD0,
 static const uint8_t seconds_register_addr = 0x00;
 
 /**
- * Structure used to easily access different bit sequences in the
+ * Structures used to easily access different bit sequences in the
  * BCD encoded RTC register values.
  *
  * Bit positions in comments are 0-indexed.
@@ -72,6 +72,92 @@ struct RTC_time
 
 		} positions;
 	} minutes, seconds;
+};
+
+/*
+ * RTC_date:
+ *
+ * Structure used to hold the values of the date related registers.
+ */
+struct RTC_date
+{
+	union RTC_date_date
+	{
+		uint8_t register_val;
+		struct RTC_date_date_positions
+		{
+
+			/*
+			 * Bits corresponding to the ones position of the
+			 * date in the date register: 3, 2, 1, 0
+			 */
+			unsigned ones_pos : 4;
+
+			/*
+			 * Bits corresponding to the tens position of the
+			 * date in the date register: 5, 4
+			 */
+			unsigned tens_pos : 2;
+
+		} positions;
+	} date;
+
+	union RTC_date_month
+	{
+		uint8_t register_val;
+		struct RTC_date_month_positions
+		{
+
+			/*
+			 * Bits corresponding to the ones position of the
+			 * month in the month register: 3, 2, 1, 0
+			 */
+			unsigned ones_pos : 4;
+
+			/*
+			 * Bits corresponding to the tens position of the
+			 * month in the month register: 4
+			 */
+			unsigned tens_pos : 1;
+
+		} positions;
+	} month;
+
+	union RTC_date_year
+	{
+		uint8_t register_val;
+		struct RTC_date_year_positions
+		{
+
+			/*
+			 * Bits corresponding to the ones position of the
+			 * year in the year register: 3, 2, 1, 0
+			 */
+			unsigned ones_pos : 4;
+
+			/*
+			 * Bits corresponding to the tens position of the
+			 * year in the year register: 7, 6, 5, 4
+			 */
+			unsigned tens_pos : 4;
+
+		} positions;
+	} year;
+
+	union RTC_date_dow
+	{
+		uint8_t register_val;
+		struct RTC_date_dow_positions
+		{
+
+			/*
+			 * Bits corresponding to the ones position of the
+			 * day of the week (DOW) in the day of the week register: 2, 1, 0
+			 */
+			unsigned ones_pos : 4;
+
+		} positions;
+	} dow;
 };
 
 /**
@@ -233,12 +319,69 @@ RTC_read_time (struct RTC_time *time)
 }
 
 /**
- * Function used to display the time in the required format[1].
- * The function uses the required LCD commands as and when required.
+ * RTC_read_date:
+ *
+ * (@date): pointer to the structure used to return the values
+ *          of the registers related to date
+ *
+ * Read the date from the RTC using I2C and return the values
+ * read from the registers without any interpretation as is.
+ *
+ * Returns: 0 if the read was successful. Non-zero value in case
+ *          of failure.
+ */
+int8_t
+RTC_read_date (struct RTC_date *date)
+{
+	static const uint8_t day_register_addr = 0x03;
+
+	/* Start communication to read the value */
+	I2C_start();
+
+	/* Request write to specify the address of the day register */
+	if (I2C_send (rtc_slave_addr__write))
+	{
+		return 1;
+	}
+
+	/* Send day register address */
+	if (I2C_send (day_register_addr))
+	{
+		return 1;
+	}
+
+	/* Re-start to read the value from the registers */
+	I2C_start ();
+
+	/* Request to read value from the registers */
+	if (I2C_send (rtc_slave_addr__read))
+	{
+		return 1;
+	}
+
+	date->dow.register_val = I2C_receive (I2C_ACK_ACK);
+
+	date->date.register_val = I2C_receive (I2C_ACK_ACK);
+
+	date->month.register_val = I2C_receive (I2C_ACK_ACK);
+
+	date->year.register_val = I2C_receive (I2C_ACK_NACK);
+
+	/* Stop the communication */
+	I2C_stop();
+
+	return 0;
+
+}
+
+/**
+ * Functions used to display the time and date in the required format[1].
+ * The functions use the required LCD commands as and when required.
  *
  * [1]: Required format:
  *
  * 		Time: HH:MM:SS
+ * 		Date: DD/MM/YY DOW
  */
 
 /**
@@ -270,6 +413,55 @@ display_time (struct RTC_time time)
 	lcd_data (time.seconds.positions.ones_pos + '0' );
 }
 
+/**
+ * display_date:
+ *
+ * (@date): the structure containing the values in the RTC registers
+ *
+ * Display the date in the LCD in the required format (see above).
+ */
+void
+display_date (struct RTC_date date)
+{
+	static const char dow_strings[8][3] = {
+		"",
+		"MON",
+		"TUE",
+		"WED",
+		"THU",
+		"FRI",
+		"SAT",
+		"SUN"
+	};
+	const char *const curr_dow = dow_strings [date.dow.positions.ones_pos];
+
+	/* Display the date */
+	lcd_data (date.date.positions.tens_pos + '0');
+	lcd_data (date.date.positions.ones_pos + '0');
+
+	/* Date-Month separator */
+	lcd_data ('/');
+
+	/* Display the month */
+	lcd_data (date.month.positions.tens_pos + '0');
+	lcd_data (date.month.positions.ones_pos + '0');
+
+	/* Month-Year separator */
+	lcd_data ('/');
+
+	/* Display the year */
+	lcd_data (date.year.positions.tens_pos + '0');
+	lcd_data (date.year.positions.ones_pos + '0');
+
+	/* Year-DOW separator */
+	lcd_data (' ');
+
+	/* Display the day of the week */
+	lcd_data (*(curr_dow + 0));
+	lcd_data (*(curr_dow + 1));
+	lcd_data (*(curr_dow + 2));
+}
+
 int
 main (void)
 {
@@ -297,17 +489,31 @@ main (void)
 	while (1)
 	{
 		struct RTC_time time = { {0}, {0}, {0} };
+		struct RTC_date date = { {0}, {0}, {0}, {0} };
 
-		if (RTC_read_time (&time))
+		if ( RTC_read_time (&time) )
 		{
 			/* Glow all LEDs to indicate ACK failure and exit */
 			PORTB = 0x00;
 			return 1;
 		}
+		else
+		{
+			lcd_goto_line_home (1);
+			display_time (time);
+		}
 
-		lcd_goto_line_home (1);
-
-		display_time (time);
+		if ( RTC_read_date (&date) )
+		{
+			/* Glow all LEDs to indicate ACK failure and exit */
+			PORTB = 0x00;
+			return 1;
+		}
+		else
+		{
+			lcd_goto_line_home (2);
+			display_date (date);
+		}
 	}
 
 	return 0;
