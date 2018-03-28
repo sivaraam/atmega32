@@ -126,15 +126,7 @@ I2C_send_ack (enum I2C_ack ack)
 	 * the ACK constant corresponds to the bit
 	 * to be sent over the I2C channel.
 	 */
-	switch (ack)
-	{
-	case I2C_ACK_ACK:
-		I2C_send_bit (0);
-		break;
-	case I2C_ACK_NACK:
-		I2C_send_bit (1);
-		break;
-	}
+	I2C_send_bit (ack);
 }
 
 /**
@@ -201,12 +193,10 @@ I2C_receive_byte (void)
 enum I2C_ack
 I2C_receive_ack (void)
 {
-	uint8_t ack = I2C_receive_bit ();
-
 	/*
 	 * Take advantage of the fact that the value of
 	 * the bit received corresponds to the
 	 * value of the corresponding ACK constants.
 	 */
-	return (ack) ? I2C_ACK_NACK : I2C_ACK_ACK;
+	return I2C_receive_bit();
 }
