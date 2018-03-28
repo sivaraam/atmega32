@@ -51,8 +51,8 @@
  */
 enum I2C_ack
 {
-	I2C_ACK_ACK = 4,
-	I2C_ACK_NACK = 7
+	I2C_ACK_ACK = 0,
+	I2C_ACK_NACK = 1
 };
 
 /**

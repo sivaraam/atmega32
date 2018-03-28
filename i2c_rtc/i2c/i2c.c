@@ -7,10 +7,10 @@
  * Values are in micro seconds (us).
  */
 #define CLK_PERIOD 20u
-#define CLK_HIGH_PERIOD 10u // CLK_PERIOD/2
-#define CLK_HALF_HIGH_PERIOD 5u // CLK_HIGH_PERIOD/2
-#define CLK_LOW_PERIOD 10u // CLK_PERIOD/2
-#define CLK_HALF_LOW_PERIOD 5u // CLK_LOW_PERIOD/2
+#define CLK_HIGH_PERIOD 10u /* CLK_PERIOD/2 */
+#define CLK_HALF_HIGH_PERIOD 5u /* CLK_HIGH_PERIOD/2 */
+#define CLK_LOW_PERIOD 10u /* CLK_PERIOD/2 */
+#define CLK_HALF_LOW_PERIOD 5u /* CLK_LOW_PERIOD/2 */
 #define STOP_START_FREE_TIME 5u
 
 typedef void (*delay) (double period);
@@ -20,8 +20,9 @@ static delay delay_fn = _delay_us;
 inline void
 I2C_init (void)
 {
-	// initially configure the SDA and SCL for output
-	// WHEN THE SCL IS LOW
+	/* Initially configure the SDA and SCL for output
+	 * when the SCL IS LOW
+	 */
 	DDR |= (1<<SCL_PIN) | (1<<SDA_PIN);
 	PORT |= (1<<SCL_PIN) | (1<<SDA_PIN);
 }
@@ -34,32 +35,33 @@ I2C_init (void)
 static void
 I2C_start_stop_helper (_Bool start)
 {
-	// initially keep the SCL low
+	/* Initially keep the SCL low */
 	PORT &= ~(1<<SCL_PIN);
 
-	// ensure SDA is configured for output
-	// WHEN THE SCL PIN IS LOW
+	/* Ensure SDA is configured for output
+	 * when the SCL PIN IS LOW
+	 */
 	DDR |= (1<<SDA_PIN);
 
-	// wait  for half the clock low period
+	/* Wait for half the clock low period */
 	delay_fn (CLK_HALF_LOW_PERIOD);
 
-	// Ensure SDA is at the level required for the desired condition
+	/* Ensure SDA is at the level required for the desired condition */
 	(start) ? (PORT |= (1<<SDA_PIN)) :
 	          (PORT &= ~(1<<SDA_PIN));
 
-	// wait for rest of the clock low period
+	/* Wait for rest of the clock low period */
 	delay_fn (CLK_HALF_LOW_PERIOD);
 
-	// keep SCL high for half the clock high period
+	/* Keep SCL high for half the clock high period */
 	PORT |= (1<<SCL_PIN);
 	delay_fn (CLK_HALF_HIGH_PERIOD);
 
-	// Toggle SDA
+	/* Toggle SDA */
 	(start) ? (PORT &= ~(1<<SDA_PIN)):
 	          (PORT |= (1<<SDA_PIN));
 
-	// wait for rest of the clock high period
+	/* Wait for rest of the clock high period */
 	delay_fn (CLK_HALF_HIGH_PERIOD);
 }
 
@@ -86,23 +88,24 @@ I2C_stop (void)
 static inline void
 I2C_send_bit (uint8_t bit)
 {
-	// initially keep the SCL low for half the clock low period
+	/* Initially keep the SCL low for half the clock low period */
 	PORT &= ~(1<<SCL_PIN);
 
-	// ensure SDA is configured for output
-	// WHEN THE SCL IS LOW
+	/* Ensure SDA is configured for output
+	 * when the SCL IS LOW
+	 */
 	DDR |= (1<<SDA_PIN);
 
 	delay_fn (CLK_HALF_LOW_PERIOD);
 
-	// set SDA to the bit to be sent
+	/* Set SDA to the bit to be sent */
 	(bit & 1) ? (PORT |= (1<<SDA_PIN)) :
 	            (PORT &= ~(1<<SDA_PIN));
 
-	// wait for rest of the clock low period
+	/* Wait for rest of the clock low period */
 	delay_fn (CLK_HALF_LOW_PERIOD);
 
-	// keep SCL high for the clock high period
+	/* Keep SCL high for the clock high period */
 	PORT |= (1<<SCL_PIN);
 	delay_fn (CLK_HIGH_PERIOD);
 }
@@ -142,25 +145,28 @@ I2C_receive_bit (void)
 {
 	uint8_t input_bit = 0;
 
-	// initially pull SCL to low
+	/* Initially pull SCL to low */
 	PORT &= ~(1<<SCL_PIN);
 
-	// ensure SDA is configured for input from slave
-	// WHEN SCL IS LOW
+	/* Ensure SDA is configured for input from slave
+	 * when the SCL IS LOW
+	 */
 	DDR &= ~(1<<SDA_PIN);
 
-	// keep SCL low for the clock low period
-	// allowing slave to toggle SDA as required
+	/* Keep SCL low for the clock low period
+	 * allowing slave to toggle SDA as required
+	 */
 	delay_fn (CLK_LOW_PERIOD);
 
-	// pull the clock high and wait for half the clock
-	// high period before reading the value
+	/* Pull the clock high and wait for half the clock
+	 * high period before reading the value
+	 */
 	PORT |= (1<<SCL_PIN);
 	delay_fn (CLK_HALF_HIGH_PERIOD);
 
 	input_bit = (PIN & (1<<SDA_PIN)) >> SDA_PIN;
 
-	// wait for rest of the clock high period
+	/* Wait for rest of the clock high period */
 	delay_fn (CLK_HALF_HIGH_PERIOD);
 
 	return input_bit;

@@ -222,7 +222,8 @@ int main (void)
 	/* Initialise the RTC */
 	if (RTC_init())
 	{
-		PORTB = 0x00; // glow all LEDs of PORTB and break out of the loop
+		/* Glow all LEDs to indicate ACK failure and exit */
+		PORTB = 0x00;
 		return 1;
 	}
 
@@ -232,6 +233,7 @@ int main (void)
 
 		if (RTC_read_time (&seconds_reg, &minutes_reg, &hours_reg))
 		{
+			/* Glow all LEDs to indicate ACK failure and exit */
 			PORTB = 0x00;
 			return 1;
 		}
@@ -239,7 +241,6 @@ int main (void)
 		lcd_goto_line_home (1);
 
 		display_time (hours_reg, minutes_reg, seconds_reg);
-//		_delay_ms (200);  /* wait for some time before updating the value */
 	}
 
 	return 0;
