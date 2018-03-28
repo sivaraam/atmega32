@@ -17,8 +17,17 @@ static const uint8_t rtc_slave_addr__write = 0xD0,
 
 static const uint8_t seconds_addr = 0x00;
 
-
-int8_t RTC_init (void)
+/**
+ * RTC_init:
+ *
+ * Initialise the RTC (DS1307) by initialising the registers to
+ * their default values.
+ *
+ * Returns: 0 if the initialization was successful. A non-zero value
+ *          in case the initialization failed in some case.
+ */
+int8_t
+RTC_init (void)
 {
 	static const uint8_t seconds_addr = 0x00,
 	                     control_addr = 0x07,
@@ -80,6 +89,17 @@ int8_t RTC_init (void)
 	return 0;
 }
 
+/**
+ * RTC_read_time:
+ *
+ * (@hours, @minutes, @seconds): pointers used to return values
+ *
+ * Read the time from the RTC using I2C and return the values
+ * read from the registers without any interpretation as is.
+ *
+ * Returns: 0 if the read was successful. Non-zero value in case
+ *          of failure.
+ */
 int8_t
 RTC_read_time (uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 {
@@ -119,7 +139,17 @@ RTC_read_time (uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 	return 0;
 }
 
-void display_time (uint8_t hours_reg, uint8_t minutes_reg, uint8_t seconds_reg)
+/*
+ * display_time:
+ *
+ * (@hours_reg, @minutes_reg, @seconds_reg): the corresponding values in the RTC registers
+ *
+ * Display the time in the LCD after interpreting the BCD encoded register values of the
+ * time. The time is displayed in the required format (HH:MM:SS) using the LCD
+ * commands as required.
+ */
+void
+display_time (uint8_t hours_reg, uint8_t minutes_reg, uint8_t seconds_reg)
 {
 	/* Bit positions are 0-indexed */
 
@@ -176,7 +206,8 @@ void display_time (uint8_t hours_reg, uint8_t minutes_reg, uint8_t seconds_reg)
 	lcd_data ( (seconds_reg & 0x0F) + '0' );
 }
 
-int main (void)
+int
+main (void)
 {
 
 	/* Debug port */
