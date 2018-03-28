@@ -7,11 +7,11 @@
  * Values are in micro seconds (us).
  */
 #define CLK_PERIOD 20u
-#define CLK_HIGH_PERIOD 10u /* CLK_PERIOD/2 */
-#define CLK_HALF_HIGH_PERIOD 5u /* CLK_HIGH_PERIOD/2 */
-#define CLK_LOW_PERIOD 10u /* CLK_PERIOD/2 */
-#define CLK_HALF_LOW_PERIOD 5u /* CLK_LOW_PERIOD/2 */
-#define STOP_START_FREE_TIME 5u
+#define CLK_HIGH_PERIOD (CLK_PERIOD/2)
+#define CLK_HALF_HIGH_PERIOD (CLK_HIGH_PERIOD/2)
+#define CLK_LOW_PERIOD (CLK_PERIOD/2)
+#define CLK_HALF_LOW_PERIOD (CLK_LOW_PERIOD/2)
+#define STOP_START_FREE_TIME 5
 
 typedef void (*delay) (double period);
 
