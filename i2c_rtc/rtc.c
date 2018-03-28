@@ -1,13 +1,6 @@
 /**
  * Simple program to read the seconds from the RTC chip in
  * the ATMEGA32 microcontroller.
- *
- * Port:
- *
- * PORTA:
- *
- * 	0 - SCL
- * 	1 - SDA
  */
 
 #include <avr/io.h>
