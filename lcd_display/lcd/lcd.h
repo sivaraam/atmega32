@@ -71,7 +71,7 @@ void lcd_command (uint8_t cmd);
 void lcd_data (uint8_t data);
 
 /**
- * lcd_select_line:
+ * lcd_goto_line_home:
  *
  * @line_num: the line number (either 1 or 2)
  *
