@@ -81,7 +81,7 @@ int8_t RTC_init (void)
 }
 
 int8_t
-RTC_read_time (uint8_t *seconds, uint8_t *minutes, uint8_t *hours)
+RTC_read_time (uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 {
 	/* Re-start communication to read the value */
 	I2C_start();
@@ -203,7 +203,7 @@ int main (void)
 	{
 		uint8_t seconds_reg = 0, minutes_reg = 0, hours_reg = 0;
 
-		if (RTC_read_time (&seconds_reg, &minutes_reg, &hours_reg))
+		if (RTC_read_time (&hours_reg, &minutes_reg, &seconds_reg))
 		{
 			/* Glow all LEDs to indicate ACK failure and exit */
 			PORTB = 0x00;
