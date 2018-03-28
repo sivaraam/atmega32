@@ -179,9 +179,9 @@ RTC_read_time (uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
  *
  * (@hours_reg, @minutes_reg, @seconds_reg): the corresponding values in the RTC registers
  *
- * Display the time in the LCD after interpreting the BCD encoded register values of the
- * time. The time is displayed in the required format (HH:MM:SS) using the LCD
- * commands as required.
+ * Display the time in the LCD after interpreting the BCD encoded register
+ * values of the time. The time is displayed in the required format (HH:MM:SS)
+ * using the LCD commands as required.
  */
 void
 display_time (uint8_t hours_reg, uint8_t minutes_reg, uint8_t seconds_reg)
