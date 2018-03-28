@@ -122,7 +122,7 @@ void I2C_send_byte (uint8_t byte)
 }
 
 void
-I2C_send_ack (enum I2C_ack ack)
+I2C_send_ack (uint8_t ack)
 {
 	/*
 	 * Take advantage of the fact that the value of
@@ -196,7 +196,7 @@ I2C_receive_byte (void)
  *
  * Returns: values from the 'I2C_ack' enumeration
  */
-enum I2C_ack
+uint8_t
 I2C_receive_ack (void)
 {
 	/*

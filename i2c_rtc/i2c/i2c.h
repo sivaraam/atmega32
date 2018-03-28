@@ -49,11 +49,8 @@
 /**
  * Constants that represent values corresponding to the ACK received.
  */
-enum I2C_ack
-{
-	I2C_ACK_ACK = 0,
-	I2C_ACK_NACK = 1
-};
+#define I2C_ACK_ACK 0u
+#define I2C_ACK_NACK 1u
 
 /**
  * I2C_init:
@@ -101,7 +98,7 @@ void I2C_send_byte (uint8_t byte);
  *
  */
 void
-I2C_send_ack (enum I2C_ack ack);
+I2C_send_ack (uint8_t ack);
 
 /**
  * I2C_receive_byte:
@@ -123,7 +120,7 @@ I2C_receive_byte (void);
  *
  * Returns: values from the 'I2C_ack' enumeration
  */
-enum I2C_ack
+uint8_t
 I2C_receive_ack (void);
 
 #endif
