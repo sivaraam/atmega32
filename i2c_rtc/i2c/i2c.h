@@ -6,10 +6,11 @@
  * communication. This is done for a ATMEGA32 microcontroller
  * whose clock frequency is 1MHz.
  *
- * The SDA and SCL lines are handled manually. No internal I2C helping
- * functions are used for the I2C communication. Therefore, the I2C clock
- * is generated my manually toggling the SCL line as and when required.
- * So, the clock might not be at a precise frequency.
+ * This is a "bit banging" implementation and thus does not use
+ * features enabling I2C communication built-in to the controller.
+ * The I2C clock is generated my manually toggling the SCL line
+ * as and when required. So, the clock might not be at a precise
+ * frequency.
  *
  * Notes:
  *
