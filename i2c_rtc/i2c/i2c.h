@@ -6,10 +6,11 @@
  * communication. This is done for a ATMEGA32 microcontroller
  * whose clock frequency is 1MHz.
  *
- * The SDA and SCL lines are handled manually. No internal I2C helping
- * functions are used for the I2C communication. Therefore, the I2C clock
- * is generated my manually toggling the SCL line as and when required.
- * So, the clock might not be at a precise frequency.
+ * This is a "bit banging" implementation and thus does not use
+ * features enabling I2C communication built-in to the controller.
+ * The I2C clock is generated my manually toggling the SCL line
+ * as and when required. So, the clock might not be at a precise
+ * frequency.
  *
  * Notes:
  *
@@ -95,17 +96,6 @@ int8_t
 I2C_send (uint8_t byte);
 
 /**
- * I2C_send_ack:
- *
- * @ack: the ACK to be sent over the I2C channel.
- *
- * Sends the requested ACK over the I2C channel.
- *
- */
-void
-I2C_send_ack (uint8_t ack);
-
-/**
  * I2C_receive:
  *
  * @ack_to_send: the ack value to send after the corresponding receive
@@ -122,16 +112,5 @@ I2C_send_ack (uint8_t ack);
  */
 uint8_t
 I2C_receive (uint8_t ack_to_send);
-
-/**
- * I2C_receive_ack:
- *
- * Returns values from the I2C_ack enumeration corresponding to the ACK received
- * from the I2C channel.
- *
- * Returns: values from the 'I2C_ack' enumeration
- */
-uint8_t
-I2C_receive_ack (void);
 
 #endif
