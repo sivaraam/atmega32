@@ -38,8 +38,8 @@ I2C_start_stop_helper (_Bool start)
 	/* Initially keep the SCL low */
 	PORT &= ~(1<<SCL_PIN);
 
-	/* Ensure SDA is configured for output
-	 * when the SCL PIN IS LOW
+	/* Change data direction of SDA to output
+	 * when the SCL IS LOW
 	 */
 	DDR |= (1<<SDA_PIN);
 
@@ -63,6 +63,12 @@ I2C_start_stop_helper (_Bool start)
 
 	/* Wait for rest of the clock high period */
 	delay_fn (CLK_HALF_HIGH_PERIOD);
+
+	/* Change data direction back to input
+	 * when the SCL IS LOW.
+	 */
+	PORT &= ~(1<<SCL_PIN);
+	DDR &= ~(1<<SDA_PIN);
 }
 
 /**
@@ -78,7 +84,7 @@ I2C_send_bit (uint8_t bit)
 	/* Initially keep the SCL low for half the clock low period */
 	PORT &= ~(1<<SCL_PIN);
 
-	/* Ensure SDA is configured for output
+	/* Change data direction of SDA to output
 	 * when the SCL IS LOW
 	 */
 	DDR |= (1<<SDA_PIN);
@@ -95,6 +101,12 @@ I2C_send_bit (uint8_t bit)
 	/* Keep SCL high for the clock high period */
 	PORT |= (1<<SCL_PIN);
 	delay_fn (CLK_HIGH_PERIOD);
+
+	/* Change data direction back to input
+	 * when the SCL IS LOW.
+	 */
+	PORT &= ~(1<<SCL_PIN);
+	DDR &= ~(1<<SDA_PIN);
 }
 
 /**
@@ -150,11 +162,6 @@ I2C_receive_bit (void)
 
 	/* Initially pull SCL to low */
 	PORT &= ~(1<<SCL_PIN);
-
-	/* Ensure SDA is configured for input from slave
-	 * when the SCL IS LOW
-	 */
-	DDR &= ~(1<<SDA_PIN);
 
 	/* Keep SCL low for the clock low period
 	 * allowing slave to toggle SDA as required
