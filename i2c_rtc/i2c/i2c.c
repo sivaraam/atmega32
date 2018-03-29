@@ -2,6 +2,35 @@
 #include <util/delay.h>
 #include "i2c.h"
 
+/**
+ * Implementation note:
+ *
+ * Data direction:
+ *
+ * 	- The data direction of SCL is always set for output.
+ *
+ * 	- As the amount of data read through I2C is expected to
+ * 	  be more as compared to the amount of data written using
+ * 	  I2C the data direction of the SDA line is always
+ * 	  expected to be set for input.
+ *
+ * 	  So, the helper functions related to reading data do not
+ * 	  change the data direction. The helper functions related
+ * 	  to writing data change the data direction for output and
+ * 	  change it back to input after the required work has been done.
+ *
+ * 	  This would possibly reduce the unwanted data direction changes.
+ *
+ * 	- The data direction is to be toggled only when the clock is low
+ * 	  otherwise it would lead to bad consequences while reading the
+ * 	  acknowledgement.
+ *
+ * Clock:
+ *
+ * 	- Every helper function at a minimum would toggle the clock for
+ * 	  one complete clock cycle.
+ */
+
 /*
  * Define constants for time periods.
  * Values are in micro seconds (us).
