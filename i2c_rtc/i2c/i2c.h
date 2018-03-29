@@ -95,17 +95,6 @@ int8_t
 I2C_send (uint8_t byte);
 
 /**
- * I2C_send_ack:
- *
- * @ack: the ACK to be sent over the I2C channel.
- *
- * Sends the requested ACK over the I2C channel.
- *
- */
-void
-I2C_send_ack (uint8_t ack);
-
-/**
  * I2C_receive:
  *
  * @ack_to_send: the ack value to send after the corresponding receive
@@ -122,16 +111,5 @@ I2C_send_ack (uint8_t ack);
  */
 uint8_t
 I2C_receive (uint8_t ack_to_send);
-
-/**
- * I2C_receive_ack:
- *
- * Returns values from the I2C_ack enumeration corresponding to the ACK received
- * from the I2C channel.
- *
- * Returns: values from the 'I2C_ack' enumeration
- */
-uint8_t
-I2C_receive_ack (void);
 
 #endif

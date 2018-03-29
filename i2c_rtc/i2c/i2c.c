@@ -65,19 +65,6 @@ I2C_start_stop_helper (_Bool start)
 	delay_fn (CLK_HALF_HIGH_PERIOD);
 }
 
-void
-I2C_start (void)
-{
-	I2C_start_stop_helper (1);
-}
-
-void
-I2C_stop (void)
-{
-	I2C_start_stop_helper (0);
-	delay_fn (STOP_START_FREE_TIME);
-}
-
 /**
  * I2C_send_bit:
  *
@@ -111,6 +98,25 @@ I2C_send_bit (uint8_t bit)
 }
 
 /**
+ * I2C_send_ack:
+ *
+ * @ack: the ACK to be sent over the I2C channel.
+ *
+ * Sends the requested ACK over the I2C channel.
+ *
+ */
+static inline void
+I2C_send_ack (uint8_t ack)
+{
+	/*
+	 * Take advantage of the fact that the value of
+	 * the ACK constant corresponds to the bit
+	 * to be sent over the I2C channel.
+	 */
+	I2C_send_bit (ack);
+}
+
+/**
  * I2C_send_byte:
  *
  * @byte: the byte to be sent
@@ -127,30 +133,6 @@ I2C_send_byte (uint8_t byte)
 	{
 		I2C_send_bit ((byte & (1<<bit)) >> bit);
 	}
-}
-
-int8_t
-I2C_send (uint8_t byte)
-{
-	I2C_send_byte (byte);
-
-	/*
-	 * Take advantage of the fact that the value of
-	 * the ACK constant match with the corresponding
-	 * values to be returned.
-	 */
-	return I2C_receive_ack();
-}
-
-void
-I2C_send_ack (uint8_t ack)
-{
-	/*
-	 * Take advantage of the fact that the value of
-	 * the ACK constant corresponds to the bit
-	 * to be sent over the I2C channel.
-	 */
-	I2C_send_bit (ack);
 }
 
 /**
@@ -194,6 +176,26 @@ I2C_receive_bit (void)
 }
 
 /**
+ * I2C_receive_ack:
+ *
+ * Returns constants whose values correspond to the ACK received
+ * from the I2C channel.
+ *
+ * Returns: constants I2C_ACK_ACK or I2C_ACK_NACK corresponding to the
+ *          acknowledgement received over the I2C channel.
+ */
+static inline uint8_t
+I2C_receive_ack (void)
+{
+	/*
+	 * Take advantage of the fact that the value of
+	 * the bit received corresponds to the
+	 * value of the corresponding ACK constants.
+	 */
+	return I2C_receive_bit();
+}
+
+/**
  * I2C_receive_byte:
  *
  * Return the byte that was read during 8 high clock periods.
@@ -218,6 +220,32 @@ I2C_receive_byte (void)
 	return input_byte;
 }
 
+void
+I2C_start (void)
+{
+	I2C_start_stop_helper (1);
+}
+
+void
+I2C_stop (void)
+{
+	I2C_start_stop_helper (0);
+	delay_fn (STOP_START_FREE_TIME);
+}
+
+int8_t
+I2C_send (uint8_t byte)
+{
+	I2C_send_byte (byte);
+
+	/*
+	 * Take advantage of the fact that the value of
+	 * the ACK constant match with the corresponding
+	 * values to be returned.
+	 */
+	return I2C_receive_ack();
+}
+
 uint8_t
 I2C_receive (uint8_t ack_to_send)
 {
@@ -226,23 +254,4 @@ I2C_receive (uint8_t ack_to_send)
 	I2C_send_ack (ack_to_send);
 
 	return incoming_byte;
-}
-
-/**
- * I2C_receive_ack:
- *
- * Returns values from the I2C_ack enumeration corresponding to the ACK received
- * from the I2C channel.
- *
- * Returns: values from the 'I2C_ack' enumeration
- */
-uint8_t
-I2C_receive_ack (void)
-{
-	/*
-	 * Take advantage of the fact that the value of
-	 * the bit received corresponds to the
-	 * value of the corresponding ACK constants.
-	 */
-	return I2C_receive_bit();
 }
